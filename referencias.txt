@@ -1,0 +1,2 @@
+https://stackoverflow.com/questions/14414274/opencv-detect-real-world-coordinates -- mapa mundo e disparidade
+https://stackoverflow.com/questions/27374970/q-matrix-for-the-reprojectimageto3d-function-in-opencv -- montagem da matriz q
