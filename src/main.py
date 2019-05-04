@@ -25,43 +25,24 @@ def mainReq1(image_option):
     print('loading images...')
     imgL = cv2.imread(aux_directory+'L.png')  # downscale images for faster processing
     imgR = cv2.imread(aux_directory+'R.png')
-    
+
+
+    #calculates disparity and filters the result
     disp = calculateDisparity(imgL,imgR,mindisp,maxdisp)
-    #disp = calculateDisparity2(imgL,imgR)
-    print("HERE",imgL.shape[0:2])
-    width = imgL.shape[1]
-    height = imgL.shape[0]
-    Q = np.array([
-        [1, 0, 0, -width/2],
-        [0, 1, 0, -height/2],
-        [0, 0, 0, focal_length],
-        [0, 0, -1/baseline, 0]
-    ])
-    print(Q)
-    points,colors = calculatePointCloud(imgL,disp, Q)
-    print(points)
-    #identity matrix because theres no visible rotation between the two images
-    r = np.eye(3)
-    #1000 to consider milimeters, 100 for centimeters
-    t = np.array([0, 0, -1000.0])
-    k = np.array([[focal_length, 0, width/2],
-        [0, focal_length, height/2],
-        [0, 0, 1]])
-    # source of images didnt inform any distortion, considering distortions to be zero
-    dist_coeff = np.zeros((4, 1))
+    cv2.namedWindow('disparity', cv2.WINDOW_NORMAL)
+    cv2.imshow('disparity',disp)
 
-    def view(r, t):
-        aux = calculateProjectedImage(
-            points, colors, r, t, k, dist_coeff, width, height
-        )
-        cv2.namedWindow('projected',cv2.WINDOW_GUI_NORMAL )
-        cv2.imshow('projected',aux )
-    
-    cv2.namedWindow("both",cv2.WINDOW_NORMAL )
-    cv2.imshow("both", np.hstack((imgL, imgR)))
+    world_coordinates = np.zeros((imgL.shape[1], imgL.shape[0], 3))
 
-    view(r,t)
+    calcWorldCoordinates(world_coordinates, focal_length, baseline, disp)
+    mouse_tracker = MouseClick('image left', True)
+    cv2.imshow('image left', imgL)
+    aux = 0
     while(True):
+        if mouse_tracker.clicks_number > 0 and aux is not mouse_tracker.clicks_number:
+            print("world coordenates XYZ = ",world_coordinates[mouse_tracker.xi][mouse_tracker.yi])
+            aux = mouse_tracker.clicks_number
+            pass
         if(cv2.waitKey(10) & 0xFF == 27):
             break
         pass

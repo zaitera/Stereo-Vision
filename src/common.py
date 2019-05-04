@@ -1,33 +1,27 @@
 import numpy as np
-#from sklearn.preprocessing import normalize
-import cv2
+from MouseClick import *
 
-def removeInvalid(disp_arr, points, colors):
-    mask = (
-        (disp_arr > disp_arr.min()) &
-        np.all(~np.isnan(points), axis=1) &
-        np.all(~np.isinf(points), axis=1)
-    )
-    return points[mask], colors[mask]
-
-def projectPoints(points, colors, r, t, k, dist_coeff, width, height):
-    projected, _ = cv2.projectPoints(points, r, t, k, dist_coeff)
-    xy = projected.reshape(-1, 2).astype(np.int)
-    mask = (
-        (0 <= xy[:, 0]) & (xy[:, 0] < width) &
-        (0 <= xy[:, 1]) & (xy[:, 1] < height)
-    )
-    return xy[mask], colors[mask] 
-def calculateProjectedImage(points, colors, r, t, k, dist_coeff, width, height):
-    xy, mm = projectPoints(points, colors, r, t, k, dist_coeff, width, height)
-    image = np.zeros((height, width, 3), dtype=colors.dtype)
-    image[xy[:, 1], xy[:, 0]] = mm
-    return image
-
-def calculatePointCloud(image, disp, q):
-    points = cv2.reprojectImageTo3D(disp, q).reshape(-1, 3)
-    colors = image.reshape(-1, 3)
-    return removeInvalid(disp.reshape(-1), points, colors)
+def calcWorldCoordinates(world_coordinates,focal_length, baseline, disp):
+    print("calculating world coordenates...\n")
+    for i in range(world_coordinates.shape[1]):
+        for j in range(world_coordinates.shape[0]):
+            #X and Y of left and right image considering the disparity on the shifted
+            xL = i
+            yL = j
+            xR = i + disp[i][j]
+            yR = j
+            #Calcula as coordenadas do mundo
+            if (xL- xR) != 0:
+                X = (baseline * (xL + xR)) / (2 * (xL- xR))
+                Y = (baseline * (yL + yR)) / (2 * (xL- xR))
+                Z = (baseline * focal_length) / (xL-xR)
+            else:
+                X = Y = Z = 0
+            
+            world_coordinates[j][i][0] = X
+            world_coordinates[j][i][1] = Y
+            world_coordinates[j][i][2] = Z
+    print("world coordenates calculated...\n")
 
 def calculateDisparity(imgL,imgR,mindisp,maxdisp):
      # SGBM Parameters -----------------
@@ -67,26 +61,6 @@ def calculateDisparity(imgL,imgR,mindisp,maxdisp):
     filteredImg = wls_filter.filter(displ, imgL, None, dispr)  # important to put "imgL" here!!!
     cv2.filterSpeckles(filteredImg, 0, 4000, maxdisp) 
 
-    filteredImg = cv2.normalize(src=filteredImg, dst=filteredImg, beta=0, alpha=255, norm_type=cv2.NORM_MINMAX);
+    filteredImg = cv2.normalize(src=filteredImg, dst=filteredImg, beta=0, alpha=255, norm_type=cv2.NORM_MINMAX)
     filteredImg = np.uint8(filteredImg)
     return filteredImg
-
-
-
-def calc_disparity(left_image, right_image):
-    window_size = 3
-    min_disp = 1
-    num_disp = 16*2
-    stereo = cv2.StereoSGBM(
-        minDisparity=min_disp,
-        numDisparities=num_disp,
-        SADWindowSize=window_size,
-        uniquenessRatio=10,
-        speckleWindowSize=100,
-        speckleRange=32,
-        disp12MaxDiff=1,
-        P1=8*3*window_size**2,
-        P2=32*3*window_size**2,
-        fullDP=False
-    )
-    return stereo.compute(left_image, right_image).astype(np.float32) / 16.0
