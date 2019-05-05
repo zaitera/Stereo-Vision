@@ -1,5 +1,5 @@
 import argparse
-from common import *
+from utils import *
 
 def mainReq1(image_option):
     if image_option ==  'm':
