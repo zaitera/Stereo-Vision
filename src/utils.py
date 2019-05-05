@@ -13,10 +13,10 @@ def calcWorldCoordinates(height, width, focal_length, baseline, disp):
     deltaX = xL-xR
     deltaX[deltaX == 0.0] = np.inf
     X = const*((xL + xR) / deltaX)
-    Y = const*((yL + yR) / np.transpose(deltaX))
+    Y = const*(np.transpose(yL + yR) / deltaX)
     const = baseline * focal_length
     Z = const / deltaX
-    world_coordinates = cv2.merge((X,np.transpose(Y),Z))
+    world_coordinates = cv2.merge((X,Y,Z))
     return world_coordinates
     
 
