@@ -1,6 +1,7 @@
 import argparse
 from utils import *
 
+
 def mainReq1(image_option):
     if image_option ==  'm':
         aux_directory = './data/Middlebury/Motorcycle-perfect/im'
@@ -60,7 +61,35 @@ def mainReq1(image_option):
 
    
 def mainReq2():
-    pass
+    aux_directory = './data/FurukawaPonce/Morpheus'
+    fc1 = [6704.926882, 6705.241311]
+    cc1 = [738.251932, 457.560286]
+    alpha_c1 = 0.000103
+    R1 = np.asarray([[0.70717199,  0.70613396, -0.03581348],
+                    [0.28815232, -0.33409066, -0.89741388], 
+                    [-0.64565936,  0.62430623, -0.43973369]])
+    Tc1 = [-532.285900, 207.183600, 2977.408000]
+
+    fc2 = [6682.125964, 6681.475962]
+    cc2 = [875.207200, 357.700292]
+    alpha_c2 = 0.000101
+    R2 = np.asarray([[0.48946344,  0.87099159, -0.04241701], 
+                    [0.33782142, -0.23423702, -0.91159734], 
+                    [-0.80392924,  0.43186419, -0.40889007]])
+    Tc2 = [-614.549000, 193.240700, 3242.754000]
+
+    print('loading images...')
+    imgL = cv2.imread(aux_directory+'L.jpg')  # downscale images for faster processing
+    imgR = cv2.imread(aux_directory+'R.jpg')
+
+    imgL, imgR = reshape(imgL, imgR)
+
+    p1, p2 = matching(imgL, imgR, 20)
+    print (p1)
+    print (p2)
+    #Ext1, Ext2 = calculateExtrinsicMatrix(R1, Tc1, R2, Tc2)
+
+
 def mainReq3():
     pass
 
@@ -78,10 +107,10 @@ if __name__ == "__main__":
     if (int(args["r"]) == 1):
         mainReq1(args["i"])
         pass
-    elif (int(args["r"]) == 1):
+    elif (int(args["r"]) == 2):
         mainReq2()
         pass
-    elif (int(args["r"]) == 1):
+    elif (int(args["r"]) == 3):
         mainReq3()
         pass
     else:

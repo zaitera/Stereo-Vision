@@ -1,9 +1,69 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from MouseClick import *
 
 MAX_VIS_DISTANCE_M = 19700
 
 MAX_VIS_DISTANCE_P = 85000
+
+def circles(img1, img2, pts1, pts2, i):
+    color = tuple(np.random.randint(0,255,3).tolist())
+    img1 = cv2.circle(img1,tuple(pts1[i]),15,color,-1)
+    img2 = cv2.circle(img2,tuple(pts2[i]),15,color,-1)
+    return img1, img2
+
+def matching(img1, img2, number):
+    orb = cv2.ORB_create()
+
+    kp1, des1 = orb.detectAndCompute(img1, None)
+    kp2, des2 = orb.detectAndCompute(img2, None)
+
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
+    matches = bf.match(des1,des2)
+    matches = sorted(matches, key = lambda x:x.distance)
+
+    pts1 = []
+    pts2 = []
+
+
+    #reference: https://stackoverflow.com/questions/30716610/how-to-get-pixel-coordinates-from-feature-matching-in-opencv-python
+    for mat in matches:
+        img1_idx = mat.queryIdx
+        img2_idx = mat.trainIdx
+
+        pts1.append((kp1[img1_idx].pt))
+        pts2.append((kp2[img2_idx].pt)) 
+
+    pts1 = np.int32(pts1)
+    pts2 = np.int32(pts2)
+    F, mask = cv2.findFundamentalMat(pts1,pts2,cv2.FM_LMEDS)
+    print("Fundamental Matrix: \n", F)
+
+    pts1 = pts1[mask.ravel()==1]
+    pts2 = pts2[mask.ravel()==1]
+
+
+    for i in range (number):
+        circles(img1, img2, pts1, pts2, i)
+    img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches[:number], None, flags = 2)
+
+    img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)
+    plt.imshow(img3)
+    plt.show()
+    return pts1[0:5], pts2[0:5]
+
+def reshape(img1, img2):
+    height1, width1, _ = img1.shape
+    height2, width2, _ = img2.shape
+
+    height = min(height1, height2)
+    width = min(width1, width2)
+
+    img1 = img1[0:height, 0:width]
+    img2 = img2[0:height, 0:width]
+
+    return img1, img2
+
 
 def normalize_depth(world_coordinates,image_option):
     print("Normalizing depth...")
