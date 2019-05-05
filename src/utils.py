@@ -1,6 +1,24 @@
 import numpy as np
 from MouseClick import *
 
+MAX_VIS_DISTANCE_M = 19700
+
+MAX_VIS_DISTANCE_P = 85000
+
+def normalize_depth(world_coordinates,image_option):
+    print("Normalizing depth...")
+    X,Y,Z = cv2.split(world_coordinates)
+    if image_option ==  'm':
+        Z[Z > MAX_VIS_DISTANCE_M] = MAX_VIS_DISTANCE_M
+    else:
+        Z[Z > MAX_VIS_DISTANCE_P] = MAX_VIS_DISTANCE_P
+    
+    Z = cv2.normalize(src=Z, dst=Z, beta=0, alpha=254, norm_type=cv2.NORM_MINMAX)
+    Z[Z == 0] = 255
+
+    world_coordinates= np.uint8(cv2.merge((X,Y,Z)))
+    return world_coordinates
+
 def calcWorldCoordinates(height, width, focal_length, baseline, disp):
     print("calculating real world coordenates...")
     xL = np.arange(np.float32(width))
@@ -12,10 +30,10 @@ def calcWorldCoordinates(height, width, focal_length, baseline, disp):
     const = baseline/2
     deltaX = xL-xR
     deltaX[deltaX == 0.0] = np.inf
-    X = const*((xL + xR) / deltaX)
-    Y = const*(np.transpose(yL + yR) / deltaX)
+    X = -const*((xL + xR) / deltaX)
+    Y = -const*(np.transpose(yL + yR) / deltaX)
     const = baseline * focal_length
-    Z = const / deltaX
+    Z = -const / deltaX
     world_coordinates = cv2.merge((X,Y,Z))
     return world_coordinates
     

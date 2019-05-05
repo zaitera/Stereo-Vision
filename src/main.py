@@ -28,17 +28,27 @@ def mainReq1(image_option):
 
     #calculates disparity and filters the result
     disp = calculateDisparity(imgL,imgR,mindisp,maxdisp)
+    
     width = imgL.shape[1]
     height = imgL.shape[0]
+    
     world_coordenates = calcWorldCoordinates(height, width, focal_length,baseline,disp)
-    cv2.namedWindow('disparity', cv2.WINDOW_NORMAL)
-    cv2.imshow('disparity',disp)
+    world_coordenates = normalize_depth(world_coordenates,image_option)
+
+    __, __, Z = cv2.split(world_coordenates)
+    if image_option ==  'm':
+        cv2.imwrite('./data/Middlebury/Motorcycle-perfect/disparity.pgm',disp)
+        cv2.imwrite('./data/Middlebury/Motorcycle-perfect/depth.png',Z)
+    else:
+        cv2.imwrite('./data/Middlebury/Jadeplant-perfect/disparity.pgm',disp)
+        cv2.imwrite('./data/Middlebury/Jadeplant-perfect/depth.png',Z)
+    
     mouse_tracker = MouseClick('image left', True)
     cv2.imshow('image left', imgL)
     aux = 0
     while(True):
         if mouse_tracker.clicks_number > 0 and aux is not mouse_tracker.clicks_number:
-            print("world coordenates [X, Y, Z] = ",world_coordenates[mouse_tracker.yi][mouse_tracker.xi])
+            print("world coordenates [ X Y Z ] = ",world_coordenates[mouse_tracker.yi][mouse_tracker.xi])
             aux = mouse_tracker.clicks_number
             pass
         if(cv2.waitKey(10) & 0xFF == 27):
