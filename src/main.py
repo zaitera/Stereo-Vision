@@ -32,15 +32,13 @@ def mainReq1(image_option):
     cv2.namedWindow('disparity', cv2.WINDOW_NORMAL)
     cv2.imshow('disparity',disp)
 
-    world_coordinates = np.zeros((imgL.shape[1], imgL.shape[0], 3))
-
-    calcWorldCoordinates(world_coordinates, focal_length, baseline, disp)
     mouse_tracker = MouseClick('image left', True)
     cv2.imshow('image left', imgL)
     aux = 0
     while(True):
         if mouse_tracker.clicks_number > 0 and aux is not mouse_tracker.clicks_number:
-            print("world coordenates XYZ = ",world_coordinates[mouse_tracker.xi][mouse_tracker.yi])
+            world_coordinates = calcWorldCoordinates(mouse_tracker.xi,mouse_tracker.yi, focal_length, baseline, disp)
+            print("world coordenates [X, Y, Z] = ",world_coordinates)
             aux = mouse_tracker.clicks_number
             pass
         if(cv2.waitKey(10) & 0xFF == 27):
