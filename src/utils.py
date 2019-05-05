@@ -2,6 +2,7 @@ import numpy as np
 from MouseClick import *
 
 def calcWorldCoordinates(height, width, focal_length, baseline, disp):
+    print("calculating real world coordenates...")
     xL = np.arange(np.float32(width))
     xL = np.tile(xL,(height,1))
     yL = np.arange(np.float32(height))

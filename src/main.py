@@ -28,11 +28,11 @@ def mainReq1(image_option):
 
     #calculates disparity and filters the result
     disp = calculateDisparity(imgL,imgR,mindisp,maxdisp)
-    cv2.namedWindow('disparity', cv2.WINDOW_NORMAL)
-    cv2.imshow('disparity',disp)
     width = imgL.shape[1]
     height = imgL.shape[0]
     world_coordenates = calcWorldCoordinates(height, width, focal_length,baseline,disp)
+    cv2.namedWindow('disparity', cv2.WINDOW_NORMAL)
+    cv2.imshow('disparity',disp)
     mouse_tracker = MouseClick('image left', True)
     cv2.imshow('image left', imgL)
     aux = 0
