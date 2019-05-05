@@ -1,25 +1,23 @@
 import numpy as np
 from MouseClick import *
 
-def calcWorldCoordinates(i,j,focal_length, baseline, disp):
-    #X and Y of left and right image considering the disparity on the shifted
-    xL = i
-    yL = j
-    xR = i + disp[j][i]
-    yR = j
-    #Calcula as coordenadas do mundo
-    if (xL- xR) != 0:
-        X = (baseline * (xL + xR)) / (2 * (xL- xR))
-        Y = (baseline * (yL + yR)) / (2 * (xL- xR))
-        Z = (baseline * focal_length) / (xL-xR)
-    else:
-        X = Y = Z = 0
-
-    world_coordinates = [0.0,0.0,0.0]    
-    world_coordinates[0] = X
-    world_coordinates[1] = Y
-    world_coordinates[2] = Z
+def calcWorldCoordinates(height, width, focal_length, baseline, disp):
+    xL = np.arange(np.float32(width))
+    xL = np.tile(xL,(height,1))
+    yL = np.arange(np.float32(height))
+    yL = np.tile(yL,(width,1))
+    yR = yL
+    xR = xL + disp
+    const = baseline/2
+    deltaX = xL-xR
+    deltaX[deltaX == 0.0] = np.inf
+    X = const*((xL + xR) / deltaX)
+    Y = const*((yL + yR) / np.transpose(deltaX))
+    const = baseline * focal_length
+    Z = const / deltaX
+    world_coordinates = cv2.merge((X,np.transpose(Y),Z))
     return world_coordinates
+    
 
 def calculateDisparity(imgL,imgR,mindisp,maxdisp):
      # SGBM Parameters -----------------

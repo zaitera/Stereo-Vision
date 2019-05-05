@@ -1,2 +1,6 @@
 https://stackoverflow.com/questions/14414274/opencv-detect-real-world-coordinates -- mapa mundo e disparidade
 https://stackoverflow.com/questions/27374970/q-matrix-for-the-reprojectimageto3d-function-in-opencv -- montagem da matriz q
+https://gist.github.com/lanius/98b7edca1b29c949fcf1 -- codigo exemplo
+https://stackoverflow.com/questions/41503561/whats-the-difference-between-reprojectimageto3dopencv-and-disparity-to-3d-coo -- difrencia entre disparidade e image 3d opencv
+https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.arange.html -- matriz crescente
+https://docs.scipy.org/doc/numpy/reference/generated/numpy.tile.html -- repeticao de linhas

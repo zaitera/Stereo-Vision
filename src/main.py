@@ -6,8 +6,8 @@ def mainReq1(image_option):
         aux_directory = './data/Middlebury/Motorcycle-perfect/im'
         mindisp = 0
         maxdisp = 336
-        intrinsics_L=np.asarray([[7315.238, 0, 997.555], [0, 7315.238, 980.754],[ 0, 0, 1]])
-        intrinsics_R=np.asarray([[7315.238, 0, 1806.75], [ 0, 7315.238, 980.754], [0, 0, 1]])
+        intrinsics_L=np.asarray([[3979.911, 0, 1244.772], [0, 3979.911, 1019.507], [ 0, 0, 1]])
+        intrinsics_R=np.asarray([[3979.911, 0, 1369.115], [0, 3979.911, 1019.507], [0, 0, 1]])
         doffs=124.343
         baseline =  193.001
         focal_length = 3979.911
@@ -16,8 +16,8 @@ def mainReq1(image_option):
         aux_directory = './data/Middlebury/Jadeplant-perfect/im'
         mindisp = 16
         maxdisp = 496
-        intrinsics_L=np.asarray([[3979.911, 0, 1244.772], [0, 3979.911, 1019.507], [ 0, 0, 1]])
-        intrinsics_R=np.asarray([[3979.911, 0, 1369.115], [0, 3979.911, 1019.507], [0, 0, 1]])
+        intrinsics_L=np.asarray([[7315.238, 0, 997.555], [0, 7315.238, 980.754],[ 0, 0, 1]])
+        intrinsics_R=np.asarray([[7315.238, 0, 1806.75], [ 0, 7315.238, 980.754], [0, 0, 1]])
         doffs=809.195
         baseline =  380.135
         focal_length = 7315.238
@@ -26,19 +26,19 @@ def mainReq1(image_option):
     imgL = cv2.imread(aux_directory+'L.png')  # downscale images for faster processing
     imgR = cv2.imread(aux_directory+'R.png')
 
-
     #calculates disparity and filters the result
     disp = calculateDisparity(imgL,imgR,mindisp,maxdisp)
     cv2.namedWindow('disparity', cv2.WINDOW_NORMAL)
     cv2.imshow('disparity',disp)
-
+    width = imgL.shape[1]
+    height = imgL.shape[0]
+    world_coordenates = calcWorldCoordinates(height, width, focal_length,baseline,disp)
     mouse_tracker = MouseClick('image left', True)
     cv2.imshow('image left', imgL)
     aux = 0
     while(True):
         if mouse_tracker.clicks_number > 0 and aux is not mouse_tracker.clicks_number:
-            world_coordinates = calcWorldCoordinates(mouse_tracker.xi,mouse_tracker.yi, focal_length, baseline, disp)
-            print("world coordenates [X, Y, Z] = ",world_coordinates)
+            print("world coordenates [X, Y, Z] = ",world_coordenates[mouse_tracker.yi][mouse_tracker.xi])
             aux = mouse_tracker.clicks_number
             pass
         if(cv2.waitKey(10) & 0xFF == 27):
