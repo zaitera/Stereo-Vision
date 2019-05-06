@@ -6,6 +6,31 @@ MAX_VIS_DISTANCE_M = 19700
 
 MAX_VIS_DISTANCE_P = 85000
 
+fc2= [6682.125964, 6681.475962]
+cc2= [875.207200, 357.700292]
+alpha_c2 = 0.000101
+R2 = np.asarray([[0.48946344,  0.87099159, -0.04241701], 
+                [0.33782142, -0.23423702, -0.91159734], 
+                [-0.80392924,  0.43186419, -0.40889007]])
+Tc2= np.array([-614.549000, 193.240700, 3242.754000])
+
+def realDistanceCalculator(camera_matrix,extrinsics,x,y):
+    pseudo_inv_extrinsics = np.linalg.pinv(extrinsics)
+    intrinsics_inv = np.linalg.inv(camera_matrix)
+    pixels_matrix = np.array((x,y,1))
+    ans = np.matmul(intrinsics_inv,pixels_matrix)
+    ans = np.matmul(pseudo_inv_extrinsics,ans)
+    ans /= ans[-1] 
+    return ans
+
+def distanceBetweenTwoPixels(pixel1,pixel2, intrinsics, extrinsics):
+    p1 = realDistanceCalculator(intrinsics, extrinsics, pixel1[0], pixel2[1])
+    p2 = realDistanceCalculator(intrinsics, extrinsics, pixel2[0], pixel2[1])
+    aux = p2 - p1
+    pixel1.clear()
+    pixel2.clear()
+    return aux
+
 def retify(Il, Ir, R1, Tc1, R2, Tc2, h, w):
     El = calculateExtrinsicMatrix(R1, Tc1)
     cameraMatrix1 = np.dot(Il,El)
