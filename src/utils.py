@@ -5,6 +5,64 @@ from MouseClick import *
 MAX_VIS_DISTANCE_M = 19700
 
 MAX_VIS_DISTANCE_P = 85000
+
+fc2= [6682.125964, 6681.475962]
+cc2= [875.207200, 357.700292]
+alpha_c2 = 0.000101
+R2 = np.asarray([[0.48946344,  0.87099159, -0.04241701], 
+                [0.33782142, -0.23423702, -0.91159734], 
+                [-0.80392924,  0.43186419, -0.40889007]])
+Tc2= np.array([-614.549000, 193.240700, 3242.754000])
+
+def realDistanceCalculator(camera_matrix,extrinsics,x,y):
+    pseudo_inv_extrinsics = np.linalg.pinv(extrinsics)
+    intrinsics_inv = np.linalg.inv(camera_matrix)
+    pixels_matrix = np.array((x,y,1))
+    ans = np.matmul(intrinsics_inv,pixels_matrix)
+    ans = np.matmul(pseudo_inv_extrinsics,ans)
+    ans /= ans[-1] 
+    return ans
+
+def distanceBetweenTwoPixels(pixel1,pixel2, intrinsics, extrinsics):
+    p1 = realDistanceCalculator(intrinsics, extrinsics, pixel1[0], pixel2[1])
+    p2 = realDistanceCalculator(intrinsics, extrinsics, pixel2[0], pixel2[1])
+    aux = p2 - p1
+    pixel1.clear()
+    pixel2.clear()
+    return aux
+
+def retify(Il, Ir, R1, Tc1, R2, Tc2, h, w):
+    El = calculateExtrinsicMatrix(R1, Tc1)
+    cameraMatrix1 = np.dot(Il,El)
+    Er = calculateExtrinsicMatrix(R2, Tc2)
+    cameraMatrix2 = np.dot(Ir,Er)
+
+    c1 = np.dot(np.linalg.inv(cameraMatrix1[:, 0:3]),cameraMatrix1[:,3])
+    c2 = np.dot(np.linalg.inv(cameraMatrix2[:, 0:3]),cameraMatrix2[:,3])
+
+    v1 = (c1-c2)
+    v2 = np.cross(R1[2],v1)
+    v3 = np.cross(v1,v2)
+
+    R = np.array([np.transpose(v1)/np.linalg.norm(v1), np.transpose(v2)/np.linalg.norm(v2), 
+                  np.transpose(v3)/np.linalg.norm(v3)])
+
+    A = Il+Ir
+    A = A/2
+    A[0,1] = 0   
+
+    aux1 = np.hstack((R, (np.dot(-R, c1)).reshape(3,1)))
+    aux2 = np.hstack((R, (np.dot(-R, c1)).reshape(3,1)))
+    Pn1 = np.dot(A, aux1)
+    Pn2 = np.dot(A, aux2)
+    T1 = np.dot(Pn1[:,0:3], np.linalg.inv(cameraMatrix1[:, 0:3]))
+    T2 = np.dot(Pn2[:,0:3], np.linalg.inv(cameraMatrix2[:, 0:3]))
+    
+    return T1, T2, cameraMatrix1, cameraMatrix2
+    #R = np.array([[],[],[]])
+    #H1, H2 = cv.StereoRectify(cameraMatrix1, cameraMatrix2, (0,0,0,0,0), (0,0,0,0,0), (h, w), 
+    #                 R, T, R1, R2, P1, P2, Q=None, flags=CV_CALIB_ZERO_DISPARITY, alpha=-1, newImageSize=(0, 0))
+  
 def calculateIntrinsicMatrix(focal_length, princPoint, skew):
     A = np.zeros((3,3))
     A[0,0] = focal_length[0]

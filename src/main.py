@@ -55,10 +55,6 @@ def mainReq1(image_option):
         if(cv2.waitKey(10) & 0xFF == 27):
             break
         pass
-
-
-
-
    
 def mainReq2():
     aux_directory = './data/FurukawaPonce/Morpheus'
@@ -70,14 +66,6 @@ def mainReq2():
                     [-0.64565936,  0.62430623, -0.43973369]])
     Tc1 = np.array([-532.285900, 207.183600, 2977.408000])
 
-    fc2 = [6682.125964, 6681.475962]
-    cc2 = [875.207200, 357.700292]
-    alpha_c2 = 0.000101
-    R2 = np.asarray([[0.48946344,  0.87099159, -0.04241701], 
-                    [0.33782142, -0.23423702, -0.91159734], 
-                    [-0.80392924,  0.43186419, -0.40889007]])
-    Tc2 = np.array([-614.549000, 193.240700, 3242.754000])
-
     print('loading images...')
     imgL = cv2.imread(aux_directory+'L.jpg')  # downscale images for faster processing
     imgR = cv2.imread(aux_directory+'R.jpg')
@@ -85,21 +73,68 @@ def mainReq2():
     imgL, imgR = reshape(imgL, imgR)
 
     p1, p2 = matching(imgL, imgR, 20)
-    print (p1)
-    print (p2)
+
 
     Il = calculateIntrinsicMatrix(fc1, cc1, alpha_c1)
     Ir = calculateIntrinsicMatrix(fc2, cc2, alpha_c2)
 
-    E1 = calculateExtrinsicMatrix(R1, Tc1)
-    E2 = calculateExtrinsicMatrix(R2, Tc2)
+    h,w,_ = imgL.shape
+    #Tc3 = Tc1 - Tc2
+    #R3 = np.dot(R1, R2)
 
-    retify(Il, Ir, E1, E2)
-
+    #aux = np.cross(Tc3, R3)
+    #F = np.dot(np.linalg.pinv(Il), aux)
+    #F = np.dot(F, np.linalg.inv(Ir))
+    #print("\n\n", F)
+    H1, H2, camM1, camM2 = retify(Il, Ir, R1, Tc1, R2, Tc2, h, w)
+    ones = np.ones((5,1), dtype=int)
+    p2 = np.hstack((p2, ones))
+    p2[:,0] = p2[:,0] - 1850
+    p1 = np.hstack((p1, ones))
+    PosReal = np.dot(np.linalg.pinv(H2), p2[4])
+    EstimatedL = np.dot(H1, PosReal)
+    cv2.imshow('projected', EstimatedL)
+    print("\n\n\nPosição na imagem da esquerda em Pixel:", p1[4])
+    print("Posição adquirida pela projeção: ",EstimatedL)
 
 
 def mainReq3():
-    pass
+    global fc2 
+    global cc2 
+    global alpha_c2 
+    global R2 
+    global Tc2
+    aux_directory = './data/FurukawaPonce/Morpheus'
+    imgR = cv2.imread(aux_directory+'R.jpg')  # downscale images for faster processing
+
+    toMM = [0.008191 , 0.008176]
+    fc2 = [a*b for a,b in zip(toMM,fc2)]
+    print("HERE ", fc2)
+    extrinsic2 = calculateExtrinsicMatrix(R2,Tc2)
+    intrinsic2 = calculateIntrinsicMatrix(fc2, cc2, alpha_c2)
+
+    mouse_tracker = MouseClick('Planar image',False)
+    print("click on two points of width")
+    dimensions = []
+    cv2.imshow('Planar image', imgR)
+    while(True):
+        if mouse_tracker.clicks_number > 0 :
+            if mouse_tracker.clicks_number == 2:
+                print("dimension measured")
+                aux = distanceBetweenTwoPixels([mouse_tracker.xi,mouse_tracker.yi], [mouse_tracker.xf,mouse_tracker.yf],intrinsic2,extrinsic2)
+                mouse_tracker.clicks_number = 0
+                if len(dimensions) < 3:
+                    dimensions.append(np.sqrt(aux[0]**2 + aux[1]**2))
+                    pass
+                else:
+                    print("done measuring all dimensions, result= ", dimensions)
+                    dimensions.clear()
+                    dimensions.append(np.sqrt(aux[0]**2 + aux[1]**2))
+                pass
+            pass
+        if(cv2.waitKey(10) & 0xFF == 27):
+            break
+            pass
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
