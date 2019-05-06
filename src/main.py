@@ -1,6 +1,7 @@
 import argparse
 from utils import *
 
+
 def mainReq1(image_option):
     if image_option ==  'm':
         aux_directory = './data/Middlebury/Motorcycle-perfect/im'
@@ -60,7 +61,55 @@ def mainReq1(image_option):
 
    
 def mainReq2():
-    pass
+    aux_directory = './data/FurukawaPonce/Morpheus'
+    fc1 = [6704.926882, 6705.241311]
+    cc1 = [738.251932, 457.560286]
+    alpha_c1 = 0.000103
+    R1 = np.asarray([[0.70717199,  0.70613396, -0.03581348],
+                    [0.28815232, -0.33409066, -0.89741388], 
+                    [-0.64565936,  0.62430623, -0.43973369]])
+    Tc1 = np.array([-532.285900, 207.183600, 2977.408000])
+
+    fc2 = [6682.125964, 6681.475962]
+    cc2 = [875.207200, 357.700292]
+    alpha_c2 = 0.000101
+    R2 = np.asarray([[0.48946344,  0.87099159, -0.04241701], 
+                    [0.33782142, -0.23423702, -0.91159734], 
+                    [-0.80392924,  0.43186419, -0.40889007]])
+    Tc2 = np.array([-614.549000, 193.240700, 3242.754000])
+
+    print('loading images...')
+    imgL = cv2.imread(aux_directory+'L.jpg')  # downscale images for faster processing
+    imgR = cv2.imread(aux_directory+'R.jpg')
+
+    imgL, imgR = reshape(imgL, imgR)
+
+    p1, p2 = matching(imgL, imgR, 20)
+
+
+    Il = calculateIntrinsicMatrix(fc1, cc1, alpha_c1)
+    Ir = calculateIntrinsicMatrix(fc2, cc2, alpha_c2)
+
+    h,w,_ = imgL.shape
+    #Tc3 = Tc1 - Tc2
+    #R3 = np.dot(R1, R2)
+
+    #aux = np.cross(Tc3, R3)
+    #F = np.dot(np.linalg.pinv(Il), aux)
+    #F = np.dot(F, np.linalg.inv(Ir))
+    #print("\n\n", F)
+    H1, H2, camM1, camM2 = retify(Il, Ir, R1, Tc1, R2, Tc2, h, w)
+    ones = np.ones((5,1), dtype=int)
+    p2 = np.hstack((p2, ones))
+    p2[:,0] = p2[:,0] - 1850
+    p1 = np.hstack((p1, ones))
+    PosReal = np.dot(np.linalg.pinv(H2), p2[4])
+    EstimatedL = np.dot(H1, PosReal)
+
+    print("\n\n\nPosição na imagem da esquerda em Pixel:", p1[4])
+    print("Posição adquirida pela projeção: ",EstimatedL)
+
+
 def mainReq3():
     pass
 
@@ -78,10 +127,10 @@ if __name__ == "__main__":
     if (int(args["r"]) == 1):
         mainReq1(args["i"])
         pass
-    elif (int(args["r"]) == 1):
+    elif (int(args["r"]) == 2):
         mainReq2()
         pass
-    elif (int(args["r"]) == 1):
+    elif (int(args["r"]) == 3):
         mainReq3()
         pass
     else:

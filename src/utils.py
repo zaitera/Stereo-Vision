@@ -1,9 +1,117 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from MouseClick import *
 
 MAX_VIS_DISTANCE_M = 19700
 
 MAX_VIS_DISTANCE_P = 85000
+
+def retify(Il, Ir, R1, Tc1, R2, Tc2, h, w):
+    El = calculateExtrinsicMatrix(R1, Tc1)
+    cameraMatrix1 = np.dot(Il,El)
+    Er = calculateExtrinsicMatrix(R2, Tc2)
+    cameraMatrix2 = np.dot(Ir,Er)
+
+    c1 = np.dot(np.linalg.inv(cameraMatrix1[:, 0:3]),cameraMatrix1[:,3])
+    c2 = np.dot(np.linalg.inv(cameraMatrix2[:, 0:3]),cameraMatrix2[:,3])
+
+    v1 = (c1-c2)
+    v2 = np.cross(R1[2],v1)
+    v3 = np.cross(v1,v2)
+
+    R = np.array([np.transpose(v1)/np.linalg.norm(v1), np.transpose(v2)/np.linalg.norm(v2), 
+                  np.transpose(v3)/np.linalg.norm(v3)])
+
+    A = Il+Ir
+    A = A/2
+    A[0,1] = 0   
+
+    aux1 = np.hstack((R, (np.dot(-R, c1)).reshape(3,1)))
+    aux2 = np.hstack((R, (np.dot(-R, c1)).reshape(3,1)))
+    Pn1 = np.dot(A, aux1)
+    Pn2 = np.dot(A, aux2)
+    T1 = np.dot(Pn1[:,0:3], np.linalg.inv(cameraMatrix1[:, 0:3]))
+    T2 = np.dot(Pn2[:,0:3], np.linalg.inv(cameraMatrix2[:, 0:3]))
+    
+    return T1, T2, cameraMatrix1, cameraMatrix2
+    #R = np.array([[],[],[]])
+    #H1, H2 = cv.StereoRectify(cameraMatrix1, cameraMatrix2, (0,0,0,0,0), (0,0,0,0,0), (h, w), 
+    #                 R, T, R1, R2, P1, P2, Q=None, flags=CV_CALIB_ZERO_DISPARITY, alpha=-1, newImageSize=(0, 0))
+  
+def calculateIntrinsicMatrix(focal_length, princPoint, skew):
+    A = np.zeros((3,3))
+    A[0,0] = focal_length[0]
+    A[0,1] = skew
+    A[0,2] = princPoint[0]
+    A[1,1] = focal_length[1]
+    A[1,2] = princPoint[1]
+    A[2,2] = 1
+    return A
+
+def calculateExtrinsicMatrix(R, Tc):
+    B = np.zeros((3,4))
+    B = np.array([[R[0,0], R[0,1], R[0,2], Tc[0]], [R[1,0], R[1,1], R[1,2] , Tc[1]], [R[2,0], R[2,1], R[2,2], Tc[2]]])
+    return B
+
+
+def circles(img1, img2, pts1, pts2, i):
+    color = tuple(np.random.randint(0,255,3).tolist())
+    img1 = cv2.circle(img1,tuple(pts1[i]),15,color,-1)
+    img2 = cv2.circle(img2,tuple(pts2[i]),15,color,-1)
+    return img1, img2
+
+def matching(img1, img2, number):
+    orb = cv2.ORB_create()
+
+    kp1, des1 = orb.detectAndCompute(img1, None)
+    kp2, des2 = orb.detectAndCompute(img2, None)
+
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
+    matches = bf.match(des1,des2)
+    matches = sorted(matches, key = lambda x:x.distance)
+
+    pts1 = []
+    pts2 = []
+
+
+    #reference: https://stackoverflow.com/questions/30716610/how-to-get-pixel-coordinates-from-feature-matching-in-opencv-python
+    for mat in matches:
+        img1_idx = mat.queryIdx
+        img2_idx = mat.trainIdx
+
+        pts1.append((kp1[img1_idx].pt))
+        pts2.append((kp2[img2_idx].pt)) 
+
+    pts1 = np.int32(pts1)
+    pts2 = np.int32(pts2)
+    F, mask = cv2.findFundamentalMat(pts1,pts2,cv2.FM_LMEDS)
+    print("Fundamental Matrix: \n", F)
+
+    pts1 = pts1[mask.ravel()==1]
+    pts2 = pts2[mask.ravel()==1]
+
+
+    for i in range (number):
+        circles(img1, img2, pts1, pts2, i)
+    img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches[:number], None, flags = 2)
+
+    img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2RGB)
+    plt.imshow(img3)
+    plt.show()
+    return pts1[0:5], pts2[0:5]
+
+def reshape(img1, img2):
+    height1, width1, _ = img1.shape
+    height2, width2, _ = img2.shape
+
+    height = min(height1, height2)
+    width = min(width1, width2)
+
+    img1 = img1[0:height, 0:width]
+    img2 = img2[0:height, 0:width]
+
+    return img1, img2
+
 
 def normalize_depth(world_coordinates,image_option):
     print("Normalizing depth...")
