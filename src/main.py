@@ -68,7 +68,7 @@ def mainReq2():
     R1 = np.asarray([[0.70717199,  0.70613396, -0.03581348],
                     [0.28815232, -0.33409066, -0.89741388], 
                     [-0.64565936,  0.62430623, -0.43973369]])
-    Tc1 = [-532.285900, 207.183600, 2977.408000]
+    Tc1 = np.array([-532.285900, 207.183600, 2977.408000])
 
     fc2 = [6682.125964, 6681.475962]
     cc2 = [875.207200, 357.700292]
@@ -76,7 +76,7 @@ def mainReq2():
     R2 = np.asarray([[0.48946344,  0.87099159, -0.04241701], 
                     [0.33782142, -0.23423702, -0.91159734], 
                     [-0.80392924,  0.43186419, -0.40889007]])
-    Tc2 = [-614.549000, 193.240700, 3242.754000]
+    Tc2 = np.array([-614.549000, 193.240700, 3242.754000])
 
     print('loading images...')
     imgL = cv2.imread(aux_directory+'L.jpg')  # downscale images for faster processing
@@ -87,7 +87,15 @@ def mainReq2():
     p1, p2 = matching(imgL, imgR, 20)
     print (p1)
     print (p2)
-    #Ext1, Ext2 = calculateExtrinsicMatrix(R1, Tc1, R2, Tc2)
+
+    Il = calculateIntrinsicMatrix(fc1, cc1, alpha_c1)
+    Ir = calculateIntrinsicMatrix(fc2, cc2, alpha_c2)
+
+    E1 = calculateExtrinsicMatrix(R1, Tc1)
+    E2 = calculateExtrinsicMatrix(R2, Tc2)
+
+    retify(Il, Ir, E1, E2)
+
 
 
 def mainReq3():

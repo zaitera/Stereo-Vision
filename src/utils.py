@@ -5,6 +5,21 @@ from MouseClick import *
 MAX_VIS_DISTANCE_M = 19700
 
 MAX_VIS_DISTANCE_P = 85000
+def calculateIntrinsicMatrix(focal_length, princPoint, skew):
+    A = np.zeros((3,3))
+    A[0,0] = focal_length[0]
+    A[0,1] = skew
+    A[0,2] = princPoint[0]
+    A[1,1] = focal_length[1]
+    A[1,2] = princPoint[1]
+    A[2,2] = 1
+    return A
+
+def calculateExtrinsicMatrix(R, Tc):
+    B = np.zeros((3,4))
+    B = np.array([[R[0,0], R[0,1], R[0,2], Tc[0]], [R[1,0], R[1,1], R[1,2] , Tc[1]], [R[2,0], R[2,1], R[2,2], Tc[2]]])
+    return B
+
 
 def circles(img1, img2, pts1, pts2, i):
     color = tuple(np.random.randint(0,255,3).tolist())
