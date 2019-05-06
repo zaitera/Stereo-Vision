@@ -85,17 +85,29 @@ def mainReq2():
     imgL, imgR = reshape(imgL, imgR)
 
     p1, p2 = matching(imgL, imgR, 20)
-    print (p1)
-    print (p2)
+
 
     Il = calculateIntrinsicMatrix(fc1, cc1, alpha_c1)
     Ir = calculateIntrinsicMatrix(fc2, cc2, alpha_c2)
 
-    E1 = calculateExtrinsicMatrix(R1, Tc1)
-    E2 = calculateExtrinsicMatrix(R2, Tc2)
+    h,w,_ = imgL.shape
+    #Tc3 = Tc1 - Tc2
+    #R3 = np.dot(R1, R2)
 
-    retify(Il, Ir, E1, E2)
+    #aux = np.cross(Tc3, R3)
+    #F = np.dot(np.linalg.pinv(Il), aux)
+    #F = np.dot(F, np.linalg.inv(Ir))
+    #print("\n\n", F)
+    H1, H2, camM1, camM2 = retify(Il, Ir, R1, Tc1, R2, Tc2, h, w)
+    ones = np.ones((5,1), dtype=int)
+    p2 = np.hstack((p2, ones))
+    p2[:,0] = p2[:,0] - 1850
+    p1 = np.hstack((p1, ones))
+    PosReal = np.dot(np.linalg.pinv(H2), p2[4])
+    EstimatedL = np.dot(H1, PosReal)
 
+    print("\n\n\nPosição na imagem da esquerda em Pixel:", p1[4])
+    print("Posição adquirida pela projeção: ",EstimatedL)
 
 
 def mainReq3():

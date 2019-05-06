@@ -5,6 +5,39 @@ from MouseClick import *
 MAX_VIS_DISTANCE_M = 19700
 
 MAX_VIS_DISTANCE_P = 85000
+
+def retify(Il, Ir, R1, Tc1, R2, Tc2, h, w):
+    El = calculateExtrinsicMatrix(R1, Tc1)
+    cameraMatrix1 = np.dot(Il,El)
+    Er = calculateExtrinsicMatrix(R2, Tc2)
+    cameraMatrix2 = np.dot(Ir,Er)
+
+    c1 = np.dot(np.linalg.inv(cameraMatrix1[:, 0:3]),cameraMatrix1[:,3])
+    c2 = np.dot(np.linalg.inv(cameraMatrix2[:, 0:3]),cameraMatrix2[:,3])
+
+    v1 = (c1-c2)
+    v2 = np.cross(R1[2],v1)
+    v3 = np.cross(v1,v2)
+
+    R = np.array([np.transpose(v1)/np.linalg.norm(v1), np.transpose(v2)/np.linalg.norm(v2), 
+                  np.transpose(v3)/np.linalg.norm(v3)])
+
+    A = Il+Ir
+    A = A/2
+    A[0,1] = 0   
+
+    aux1 = np.hstack((R, (np.dot(-R, c1)).reshape(3,1)))
+    aux2 = np.hstack((R, (np.dot(-R, c1)).reshape(3,1)))
+    Pn1 = np.dot(A, aux1)
+    Pn2 = np.dot(A, aux2)
+    T1 = np.dot(Pn1[:,0:3], np.linalg.inv(cameraMatrix1[:, 0:3]))
+    T2 = np.dot(Pn2[:,0:3], np.linalg.inv(cameraMatrix2[:, 0:3]))
+    
+    return T1, T2, cameraMatrix1, cameraMatrix2
+    #R = np.array([[],[],[]])
+    #H1, H2 = cv.StereoRectify(cameraMatrix1, cameraMatrix2, (0,0,0,0,0), (0,0,0,0,0), (h, w), 
+    #                 R, T, R1, R2, P1, P2, Q=None, flags=CV_CALIB_ZERO_DISPARITY, alpha=-1, newImageSize=(0, 0))
+  
 def calculateIntrinsicMatrix(focal_length, princPoint, skew):
     A = np.zeros((3,3))
     A[0,0] = focal_length[0]
