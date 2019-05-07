@@ -36,7 +36,7 @@
 
       3- Determing the minimum box dimensions in which the object of requisite 2 can fit, this can be done clicking on the image two times to measure each dimension.
 ### To evaluate requisite 1 run this command, where i parameter can be m or p (m for the motor images and p for the plant images):
->python3 ./src/main.py --r 1 --i m OR python3 ./src/pd3.py --r 1 --i m
+>python3 ./src/main.py --r 1 --i m OR python3 ./src/pd3.py --r 1 --i p
 
 ### To evaluate requisite 2 run this command:
 >python3 ./src/main.py --r 2
