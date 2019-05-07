@@ -120,17 +120,17 @@ def mainReq3():
     while(True):
         if mouse_tracker.clicks_number > 0 :
             if mouse_tracker.clicks_number == 2:
-                print("dimension measured")
                 aux = distanceBetweenTwoPixels([mouse_tracker.xi,mouse_tracker.yi], [mouse_tracker.xf,mouse_tracker.yf],intrinsic2,extrinsic2)
+                result = np.sqrt(aux[0]**2 + aux[1]**2)
+                print("dimension measured: value = ", result)
                 mouse_tracker.clicks_number = 0
                 if len(dimensions) < 3:
-                    dimensions.append(np.sqrt(aux[0]**2 + aux[1]**2))
+                    dimensions.append(result)
+                    if len(dimensions) == 3:
+                        print("done measuring all dimensions: result = ", dimensions)
+                        dimensions.clear()
+                        pass
                     pass
-                else:
-                    print("done measuring all dimensions, result= ", dimensions)
-                    dimensions.clear()
-                    dimensions.append(np.sqrt(aux[0]**2 + aux[1]**2))
-                pass
             pass
         if(cv2.waitKey(10) & 0xFF == 27):
             break
