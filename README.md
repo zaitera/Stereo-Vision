@@ -5,13 +5,13 @@
       ├── /data  
       │   ├── /Middlebury  
       │   │   ├── /Jadeplant-perfect  
-      │   │   │   ├── imgL.png
-      │   │   │   ├── imgR.png
+      │   │   │   ├── imgL.png   
+      │   │   │   ├── imgR.png  
       │   │   │   │── disparity.pgm    
       │   │   │   └── depth.png  
       │   │   └── /Motorcycle-perfect  
-      │   │   │   ├── imgL.png
-      │   │   │   ├── imgR.png
+      │   │   │   ├── imgL.png  
+      │   │   │   ├── imgR.png  
       │   │   │   ├── disparity.pgm  
       │   │   │   └── depth.png  
       │   └── /FurukawaPonce  
