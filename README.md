@@ -5,11 +5,15 @@
       ├── /data  
       │   ├── /Middlebury  
       │   │   ├── /Jadeplant-perfect  
-      │   │   │   ├── disparity.pgm  
+      │   │   │   ├── imgL.png
+      │   │   │   ├── imgR.png
+      │   │   │   │── disparity.pgm    
       │   │   │   └── depth.png  
       │   │   └── /Motorcycle-perfect  
-      │   │       ├── disparity.pgm  
-      │   │       └── depth.png  
+      │   │   │   ├── imgL.png
+      │   │   │   ├── imgR.png
+      │   │   │   ├── disparity.pgm  
+      │   │   │   └── depth.png  
       │   └── /FurukawaPonce  
       ├── /relatorio  
       │   └── Latex source code of the report      
