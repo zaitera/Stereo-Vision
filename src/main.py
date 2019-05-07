@@ -24,7 +24,7 @@ def mainReq1(image_option):
         focal_length = 7315.238
         pass
     print('loading images...')
-    imgL = cv2.imread(aux_directory+'L.png')  # downscale images for faster processing
+    imgL = cv2.imread(aux_directory+'L.png') 
     imgR = cv2.imread(aux_directory+'R.png')
 
     #calculates disparity and filters the result
