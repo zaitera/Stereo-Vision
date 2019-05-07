@@ -114,7 +114,7 @@ def mainReq3():
     intrinsic2 = calculateIntrinsicMatrix(fc2, cc2, alpha_c2)
 
     mouse_tracker = MouseClick('Planar image',False)
-    print("click on two points of width")
+    print("click on two points for each dimension to be measured")
     dimensions = []
     cv2.imshow('Planar image', imgR)
     while(True):
@@ -127,7 +127,7 @@ def mainReq3():
                 if len(dimensions) < 3:
                     dimensions.append(result)
                     if len(dimensions) == 3:
-                        print("done measuring all dimensions: result = ", dimensions)
+                        print("done measuring all dimensions: BOX size result = ", dimensions)
                         dimensions.clear()
                         pass
                     pass
