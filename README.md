@@ -44,4 +44,6 @@
 ### To evaluate requisite 3 run this command (measuring box size):
 >python3 ./src/main.py --r 3
 
+### Photo of the result of the depth calculated  
+![alt text](https://github.com/abdullah-zaiter/Stereo-Vision/blob/master/data/Middlebury/Motorcycle-perfect/depth.png)
 
